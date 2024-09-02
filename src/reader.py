@@ -1,7 +1,7 @@
 import csv
 
 # Ruta al archivo CSV
-file_path = 'datos\questions.csv'
+file_path = 'datos/questions.csv'
 
 # Abrir y leer el archivo CSV
 with open(file_path, newline='', encoding='latin1') as csvfile:
