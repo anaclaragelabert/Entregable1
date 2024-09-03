@@ -7,7 +7,7 @@ def leer_csv(csv_file):
     with open(csv_file, newline='', encoding='latin1') as file:
         lector = csv.reader(file)
         cabeceras = next(lector) #Nos salteamos la primer linea
-        #print("Cabeceras:", headers)
+        #print("Cabeceras:", headers) -> ['Show_Number', 'Air_Date', 'Round', 'Category', 'Value', 'Question', 'Answer']
 
         # Crear una función para transformar cada fila en el formato deseado
         nueva_fila = lambda fila: (fila[3], fila[5], fila[6])

@@ -1,7 +1,97 @@
-from reader import extract_categories, read_csv
 import random
 from itertools import chain
 
+def generar_preguntas_random(preguntas, cantidad=5):
+    # Seleccionar 20 preguntas aleatorias del total
+    preguntas_20 = random.sample(preguntas, min(20, len(preguntas)))
+    
+    # Seleccionar 5 preguntas aleatorias de esas 20 preguntas
+    preguntas_5 = random.sample(preguntas_20, min(cantidad, len(preguntas_20)))
+    
+    return preguntas_5
+
+
+def obtener_preguntas_por_categoria(preguntas, categoria):
+    # Definir el predicado para filtrar preguntas por categoría
+    igual_categoria = lambda pregunta: pregunta[0] == categoria
+    # Aplicar filter con el predicado
+    preguntas_filtradas = filter(igual_categoria, preguntas)
+    # Convertir el iterador resultante en una lista
+    return list(preguntas_filtradas)
+
+
+def generar_opciones(pregunta_actual, preguntas_categoria, cantidad_opciones=4):
+    respuesta_correcta = list(pregunta_actual[2])
+    # Filtrar respuestas incorrectas usando filter y lambda
+    respuestas_incorrectas = list(filter(lambda pregunta: pregunta!= pregunta_actual, preguntas_categoria))
+    
+    # Usar map para extraer las respuestas incorrectas
+    respuestas_incorrectas = list(map(lambda pregunta: pregunta[2], respuestas_incorrectas))
+    
+    # Generar opciones incluyendo la respuesta correcta
+    opciones = list(chain(respuesta_correcta, random.sample(respuestas_incorrectas, min(cantidad_opciones - 1, len(respuestas_incorrectas)))))
+    '''
+    min(cantidad_opciones - 1, len(respuestas_incorrectas)): Aseguramos que la muestra de respuestas incorrectas tome hasta tres elementos, 
+    o menos si no hay suficientes respuestas incorrectas disponibles.
+    '''
+    # Mezclar las opciones aleatoriamente
+    return random.sample(opciones, len(opciones))
+
+
+def mostrar_pregunta(pregunta_actual, opciones):
+    # Funciones lambda para imprimir la categoría y la pregunta
+    mostrar_categoria = lambda pregunta_categoria: print(f"\nCategoría: {pregunta_categoria[0]}")
+    mostrar_pregunta = lambda pregunta_letra: print(f"Pregunta: {pregunta_letra[1]}")
+    
+    # Mostrar categoría y pregunta
+    mostrar_categoria(pregunta_actual)
+    mostrar_pregunta(pregunta_actual)
+    
+    print("Opciones:")
+    
+    # Enumerar y mostrar las opciones usando map y una función lambda
+    enumerate_opciones = lambda idx_opcion: print(f"{idx_opcion[0]}. {idx_opcion[1]}")
+    list(map(enumerate_opciones, enumerate(opciones, start=1)))
+    
+    # Capturar la respuesta del usuario y yield
+    respuesta_usuario = input("Selecciona tu respuesta (1, 2, 3, 4): ")
+    yield respuesta_usuario
+
+
+def verificar_respuesta(respuesta_usuario, respuesta_correcta):
+    return respuesta_usuario.strip.lower() == respuesta_correcta.strip.lower()
+
+
+def procesar_pregunta(pregunta, opciones):
+    '''
+    Quiero hacer que por cada pregunta:
+    Si la respuesta es correcta se le den 10 puntos al jugador y pase a siguiente pregunta
+    Si la respuesta no es correcta, se le de otra chance
+    Si en la segunda chance le emboca, se le den 5 puntos
+    Si en la segunda chance no emboca, se le den 0 puntos  y pase a siguiente pregunta
+
+    USAR RECURSION para incorporar en la verificación de respuestas para reintentar hasta el segundo intento.
+    USAR MOANDS con logs para ir guardando el puntaje del jugador
+    '''
+    pass
+
+'''
+FALTAN DECORADORES:
+    - Puntaje: es un decorador que muestra el puntaje acumulado después de cada ronda. 
+    - Temporizador: decorador para ver el tiempo de respuesta del usuario.
+
+FALTA HACER EL TIPADO
+
+FALTA HACER DOCSTRING
+
+FALTAN TESTS: haya una cobertura de tests de al menos 85%. 
+'''
+
+
+
+
+
+'''
 # Función para seleccionar una categoría aleatoria
 def select_random_category(categories):
     return random.choice(categories)
@@ -87,3 +177,4 @@ def play_trivia_round(file_path):
 # Llamar a la función para jugar la ronda de trivia
 file_path = 'datos/questions.csv'
 play_trivia_round(file_path)
+'''
