@@ -103,14 +103,14 @@ def ejecutar_ronda(preguntas: List[List[str]], opciones: List[List[str]], respue
     procesos = [procesar_pregunta(pregunta, opciones[i], respuestas_usuario[i]) for i, pregunta in enumerate(preguntas)]
     
     # Acumulando resultados y logs
-    resultados = [resultado_final]
+    # En lugar de acumular repetidamente, procesamos cada pregunta una vez
     for proceso in procesos:
-        resultados.append(proceso(resultados[-1]))
+        resultado_final = proceso(resultado_final)
 
-    # Extraer logs
-    logs = [res[1] for res in resultados[1:]]
+    # Extraer solo el log final (sin repeticiones)
+    logs = resultado_final[1]  # Resultado final contiene los logs acumulados sin necesidad de lista
     
     # Calcular puntaje total
-    puntaje_total = calcular_puntaje(sum(res[0] for res in resultados[1:]))
+    puntaje_total = calcular_puntaje(resultado_final[0])
 
-    return logs + [f"\nResultado final: {puntaje_total}\n"]
+    return [logs] + [f"\nResultado final: {puntaje_total}\n"]
