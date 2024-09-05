@@ -1,14 +1,15 @@
 import random
 from itertools import chain
-from typing import List, Dict, Tuple, Callable
+from typing import List, Dict, Tuple, Callable, Generator
 
-def generar_preguntas_random(preguntas, cantidad_preguntas):
+# Función que genera preguntas aleatorias
+def generar_preguntas_random(preguntas: List[Tuple[str, str, str]], cantidad_preguntas: int) -> Generator[Tuple[str, str, str], None, None]:
     preguntas_seleccionadas = random.sample(preguntas, cantidad_preguntas)
     for pregunta in preguntas_seleccionadas:
         yield pregunta
 
-
-def generar_opciones(preguntas, pregunta_actual):
+# Función para generar opciones de respuesta
+def generar_opciones(preguntas: List[Tuple[str, str, str]], pregunta_actual: Tuple[str, str, str]) -> List[str]:
     respuesta_correcta = pregunta_actual[2]
     categoria_actual = pregunta_actual[0]
 
@@ -38,48 +39,36 @@ def generar_opciones(preguntas, pregunta_actual):
     # Extraer solo las respuestas de las opciones
     return [opcion[2] for opcion in mezclar_opciones(opciones)]
 
-def mezclar_opciones(opciones):
+# Función para mezclar las opciones de respuesta
+def mezclar_opciones(opciones: List[Tuple[str, str, str]]) -> List[Tuple[str, str, str]]:
     opciones_copiadas = opciones[:]
     random.shuffle(opciones_copiadas)
     return opciones_copiadas
 
-'''
-def generar_opciones(preguntas, pregunta_actual):
-    respuesta_correcta = pregunta_actual[2]
-    respuestas_incorrectas = list(filter(lambda pregunta: pregunta[2] != respuesta_correcta and pregunta[0] == pregunta_actual[0]), preguntas)
-
-    if len(respuestas_incorrectas) < 2:
-        nuevas_incorrectas = random.sample(list(filter(lambda pregunta: pregunta[1] != respuesta_correcta), preguntas), 2)
-        return list(chain(nuevas_incorrectas, [respuesta_correcta]))
-    else:
-        return list(chain([respuesta_correcta], random.sample(respuestas_incorrectas, 2))) 
-    
-def mezclar_opciones(opciones):
-    return random.shuffle(opciones, len(opciones))
-'''
-
+# Función para calcular el puntaje basado en respuestas correctas
 def calcular_puntaje(respuestas_correctas: int) -> int:
     return respuestas_correctas * 10
 
-
-def mostrar_pregunta(pregunta, opciones):
+# Función para mostrar una pregunta y sus opciones
+def mostrar_pregunta(pregunta: Tuple[str, str, str], opciones: List[str]) -> str:
     print(f"\nCategoría: {pregunta[0]}")
     print(f"\nPregunta: {pregunta[1]}")
 
     for indice, opcion in enumerate(opciones):
         print(f"{indice + 1}. {opcion}")
 
-    resupuesta_usuario = input("\nIngrese su respuesta (1, 2, 3): ")
+    respuesta_usuario = input("\nIngrese su respuesta (1, 2, 3): ")
 
-    if resupuesta_usuario not in {'1', '2', '3'}:
+    if respuesta_usuario not in {'1', '2', '3'}:
         print("\nOpción inválida. Su respuesta debe ser 1, 2 o 3.")
         return mostrar_pregunta(pregunta, opciones)
     
-    return resupuesta_usuario
-    
+    return respuesta_usuario
 
+# Definimos el tipo MonadaResultado como una tupla de un entero y una cadena
 MonadaResultado = Tuple[int, str]
 
+# Función para verificar la respuesta del usuario
 def verificar_respuesta(pregunta: List[str], respuesta_usuario: int, opciones: List[str]) -> MonadaResultado:
     verificacion_res = lambda answer: answer.lower() == pregunta[2].lower()
 
@@ -93,18 +82,20 @@ def verificar_respuesta(pregunta: List[str], respuesta_usuario: int, opciones: L
         log += f"\nIncorrecto. La respuesta correcta era: {pregunta[2]}\n"
         return 0, log
 
+# Función bind para la monada
 def bind(func: Callable[[int], MonadaResultado], monada: MonadaResultado) -> MonadaResultado:
     res = func(monada[0])
     return res[0], monada[1] + res[1]
 
+# Función unit para inicializar el estado de la monada
 def unit(valor: int) -> MonadaResultado:
     return valor, ""
 
+# Función para procesar la respuesta del usuario y actualizar el estado de la monada
 def procesar_pregunta(pregunta: List[str], opciones: List[str], respuesta_usuario: int) -> Callable[[MonadaResultado], MonadaResultado]:
     return lambda estado: bind(lambda _: verificar_respuesta(pregunta, respuesta_usuario, opciones), estado)
 
-
-#Esta bien usar for si lo que hace no afecta algo externo (CHEQUEAR QUE NO PASE ESTO)
+# Función para ejecutar una ronda de preguntas y calcular resultados
 def ejecutar_ronda(preguntas: List[List[str]], opciones: List[List[str]], respuestas_usuario: List[int]) -> List[str]:
     resultado_final = unit(0)
     
@@ -123,4 +114,3 @@ def ejecutar_ronda(preguntas: List[List[str]], opciones: List[List[str]], respue
     puntaje_total = calcular_puntaje(sum(res[0] for res in resultados[1:]))
 
     return logs + [f"\nResultado final: {puntaje_total}\n"]
-
